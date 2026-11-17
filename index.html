@@ -397,6 +397,44 @@
 
         /* ===== Mobile / tablet layout ===== */
         @media (max-width: 768px) {
+            /* Постоянно видимый вход в теоретические станции: не нужно попадать по 3D-модели */
+            #mobile-theory-nav {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
+                padding: 10px 12px;
+                background: var(--panel-bg, #102532);
+                border-bottom: 1px solid var(--border, #285064);
+                position: relative;
+                z-index: 30;
+            }
+            #mobile-theory-nav button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 48px;
+                padding: 10px 8px;
+                border: 1px solid #28758a;
+                border-radius: 12px;
+                background: #071522;
+                color: #bcecf5;
+                font: 600 12px/1.25 system-ui, sans-serif;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            #mobile-theory-nav button:active {
+                background: #123b4b;
+                border-color: #21d4ed;
+            }
+            #module-theory {
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            #theory-canvas-container {
+                flex: 0 0 44dvh !important;
+                height: 44dvh !important;
+                min-height: 260px !important;
+            }
             html, body { width: 100%; min-width: 320px; min-height: 100%; height: auto; }
             body#app-body { min-height: 100dvh; height: auto; overflow-x: hidden !important; overflow-y: auto !important; display: flex; flex-direction: column; }
             #app-body > header {
@@ -551,6 +589,13 @@
 
         <!-- МОДУЛЬ 1: ТЕОРИЯ -->
         <section id="module-theory" class="absolute inset-0 flex flex-col z-10">
+            <!-- Отдельные крупные кнопки теории для сенсорных экранов -->
+            <div id="mobile-theory-nav" class="hidden">
+                <button type="button" onclick="openStationTheory('brinell')">1. Бринелль</button>
+                <button type="button" onclick="openStationTheory('rockwell')">2. Роквелл</button>
+                <button type="button" onclick="openStationTheory('vickers')">3. Виккерс</button>
+                <button type="button" onclick="openStationTheory('shore')">4. Шор</button>
+            </div>
             <div id="theory-canvas-container" class="w-full h-full relative cursor-grab active:cursor-grabbing">
                 <div class="absolute top-6 left-6 z-20 glass-panel p-4 rounded-xl max-w-sm pointer-events-none border-l-4 border-l-neonCyan">
                     <h3 class="font-tech text-sm font-bold text-slate-100 flex items-center gap-2">
@@ -2554,12 +2599,8 @@ function updateTheoryProgressUI() {
 let activeStationKey = null;
 
 function handleStationTab(key) {
-    // На телефоне тап по названию станции сразу открывает учебный материал.
-    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) {
-        openStationTheory(key);
-    } else {
-        focusStation(key);
-    }
+    // Кнопки списка станций всегда открывают теорию; для 3D-навигации остаётся вращение сцены.
+    openStationTheory(key);
 }
 
 function focusStation(key) {
@@ -2576,14 +2617,28 @@ function focusStation(key) {
 }
 
 function openStationTheory(key) {
+    if (!PRESENTATION_DATA || !PRESENTATION_DATA[key]) {
+        console.error('Не найдены материалы теоретической станции:', key);
+        alert('Не удалось загрузить материалы станции. Обновите страницу и попробуйте ещё раз.');
+        return;
+    }
     sounds.playClick();
     activeStationKey = key;
     APP_STATE.activeSlideIndex = 0;
     const stData = PRESENTATION_DATA[key];
-    document.getElementById('modal-station-title').innerText = stData.title;
-    document.getElementById('modal-station-subtitle').innerText = stData.subtitle;
+    const title = document.getElementById('modal-station-title');
+    const subtitle = document.getElementById('modal-station-subtitle');
+    const modal = document.getElementById('station-modal');
+    if (!title || !subtitle || !modal) {
+        console.error('Не найдены элементы окна теории');
+        alert('Окно теории не загрузилось. Обновите страницу.');
+        return;
+    }
+    title.innerText = stData.title;
+    subtitle.innerText = stData.subtitle;
     renderSlideContent();
-    document.getElementById('station-modal').classList.remove('opacity-0', 'pointer-events-none');
+    modal.classList.remove('opacity-0', 'pointer-events-none');
+    modal.style.display = 'flex';
 }
 
 function renderSlideContent() {
