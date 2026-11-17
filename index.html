@@ -395,132 +395,274 @@
             color: #78350F !important;
         }
 
-        /* ===== Mobile / tablet layout ===== */
-        @media (max-width: 768px) {
-            /* Постоянно видимый вход в теоретические станции: не нужно попадать по 3D-модели */
-            #mobile-theory-nav {
-                display: grid !important;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 8px;
-                padding: 10px 12px;
-                background: var(--panel-bg, #102532);
-                border-bottom: 1px solid var(--border, #285064);
-                position: relative;
-                z-index: 30;
+        /* =====================================================================
+           АДАПТИВНАЯ ВЕРСТКА
+           ≥1280  — десктоп (как было)
+           <1280  — меню навигации убирается в «гамбургер»
+           <1024  — планшет/телефон: страница прокручивается, модули идут столбцом
+           <640   — телефон
+           <380   — узкий телефон
+           ===================================================================== */
+
+        /* --- Медиа: всегда резиновые --- */
+        img, video, iframe { max-width: 100%; height: auto; }
+        svg { max-width: 100%; }
+
+        /* --- Кнопка-гамбургер --- */
+        #menu-toggle {
+            display: none;
+            flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+            width: 44px; height: 44px; flex-shrink: 0;
+            border-radius: 12px; border: 1px solid var(--border);
+            background: #0B1D28; cursor: pointer;
+            -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+            transition: background-color .2s, border-color .2s;
+        }
+        #menu-toggle:hover, #menu-toggle:focus-visible { border-color: var(--accent); outline: none; }
+        #menu-toggle span {
+            display: block; width: 20px; height: 2px; border-radius: 2px;
+            background: var(--accent);
+            transition: transform .3s cubic-bezier(.2,.8,.2,1), opacity .2s;
+        }
+        #menu-toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        #menu-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+        #menu-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+        body.theme-pristine #menu-toggle { background: #1B3326; border-color: #3D6B4F; }
+        body.theme-pristine #menu-toggle span { background: #EAF7EE; }
+
+        #nav-backdrop {
+            position: fixed; inset: 0; z-index: 35;
+            background: rgba(2, 8, 12, .55);
+            backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+            opacity: 0; pointer-events: none; transition: opacity .3s;
+        }
+        body.menu-open #nav-backdrop { opacity: 1; pointer-events: auto; }
+
+        @keyframes navItemIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: none; }
+        }
+
+        /* ================= < 1280px: гамбургер-меню ================= */
+        @media (max-width: 1279px) {
+            #menu-toggle { display: inline-flex; }
+            #app-body > header { position: relative; z-index: 40; gap: 12px; padding-left: 16px !important; padding-right: 16px !important; }
+            #header-controls { margin-left: auto; }
+
+            #main-nav {
+                position: absolute; top: calc(100% + 8px); right: 12px; z-index: 41;
+                width: min(360px, calc(100vw - 24px));
+                flex-direction: column; align-items: stretch; gap: 6px;
+                padding: 8px !important;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, .45);
+                opacity: 0; visibility: hidden; pointer-events: none;
+                transform: translateY(-10px) scale(.98); transform-origin: top right;
+                transition: opacity .25s ease, transform .3s cubic-bezier(.2,.8,.2,1), visibility 0s linear .3s;
             }
-            #mobile-theory-nav button {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 48px;
-                padding: 10px 8px;
-                border: 1px solid #28758a;
-                border-radius: 12px;
-                background: #071522;
-                color: #bcecf5;
-                font: 600 12px/1.25 system-ui, sans-serif;
-                touch-action: manipulation;
-                -webkit-tap-highlight-color: transparent;
+            #main-nav > * + * { margin-left: 0 !important; }   /* сброс space-x-2 */
+            body.menu-open #main-nav {
+                opacity: 1; visibility: visible; pointer-events: auto; transform: none;
+                transition-delay: 0s;
             }
-            #mobile-theory-nav button:active {
-                background: #123b4b;
-                border-color: #21d4ed;
+            #main-nav button {
+                width: 100%; justify-content: flex-start;
+                min-height: 50px; padding: 12px 14px !important;
+                font-size: 14px !important; text-align: left;
             }
-            #module-theory {
-                display: flex !important;
-                flex-direction: column !important;
+            body.menu-open #main-nav button { animation: navItemIn .35s both; }
+            body.menu-open #main-nav button:nth-child(2) { animation-delay: .05s; }
+            body.menu-open #main-nav button:nth-child(3) { animation-delay: .1s; }
+            #practical-lock-badge { margin-left: auto !important; }
+        }
+
+        /* ================= < 1024px: планшет и телефон ================= */
+        @media (max-width: 1023px) {
+            /* Страница прокручивается целиком вместо «приложения на весь экран» */
+            html, body { height: auto; }
+            body#app-body {
+                width: 100% !important; height: auto !important; min-height: 100dvh;
+                overflow-x: hidden !important; overflow-y: auto !important;
             }
-            #theory-canvas-container {
-                flex: 0 0 44dvh !important;
-                height: 44dvh !important;
-                min-height: 260px !important;
-            }
-            html, body { width: 100%; min-width: 320px; min-height: 100%; height: auto; }
-            body#app-body { min-height: 100dvh; height: auto; overflow-x: hidden !important; overflow-y: auto !important; display: flex; flex-direction: column; }
+
+            /* --- Шапка --- */
             #app-body > header {
-                height: auto !important; min-height: 0; padding: 10px 12px !important;
-                flex-wrap: wrap; align-items: center; gap: 10px; position: relative;
+                position: sticky; top: 0;
+                height: auto !important; flex-wrap: wrap; row-gap: 10px;
+                padding-top: 10px !important; padding-bottom: 10px !important;
             }
-            #app-body > header > div:first-child { min-width: 0; flex: 1 1 100%; }
-            #app-body > header h1 { font-size: 13px !important; line-height: 1.35; flex-wrap: wrap; }
-            #app-body > header p { font-size: 9px !important; line-height: 1.35; }
-            #app-body > header nav {
-                order: 3; width: 100%; display: grid !important; grid-template-columns: 1fr;
-                gap: 5px; padding: 5px !important;
+            #app-body > header > div:first-child { flex: 1 1 0; min-width: 0; order: 1; }
+            #app-body > header h1 { font-size: 15px !important; line-height: 1.3; flex-wrap: wrap; row-gap: 2px; }
+            #app-body > header p { font-size: 10px !important; line-height: 1.35; }
+            #menu-toggle { order: 2; }
+            #header-controls {
+                order: 3; flex: 1 1 100%; margin-left: 0;
+                display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto;
+                align-items: center; gap: 8px;
             }
-            #app-body > header nav button { width: 100%; justify-content: flex-start; padding: 10px 11px !important; font-size: 12px !important; }
-            #app-body > header > div:last-child { order: 2; width: 100%; justify-content: space-between; gap: 8px; }
-            #theme-toggle-btn { padding: 8px 10px !important; }
-            #app-body > main { display: block !important; flex: 1 0 auto; min-height: 70dvh; overflow: visible !important; position: relative; }
+            #header-controls > * + * { margin-left: 0 !important; }   /* сброс space-x-3 */
+            #header-controls > .flex-col { align-items: stretch; }
+            #header-controls > .flex-col > div { width: 100%; }
+            #header-controls .w-24 { flex: 1 1 auto; width: auto; min-width: 48px; }
+            #theme-toggle-btn, #header-controls > button { min-height: 44px; justify-content: center; }
+            #header-controls > button:last-child { width: 44px; display: flex; align-items: center; }
+
+            /* --- Модули: в потоке, неактивные полностью скрыты --- */
+            #app-body > main { display: block !important; flex: none; overflow: visible !important; }
             #module-theory, #module-practical, #module-logbook {
-                position: relative !important; inset: auto !important; width: 100%; min-height: 70dvh;
+                position: relative !important; inset: auto !important;
+                width: 100%; height: auto !important;
             }
-            #module-theory { height: auto !important; min-height: 0; }
-            #theory-canvas-container { min-height: 0 !important; height: 52dvh !important; }
-            #theory-canvas-container canvas { display: block; width: 100% !important; height: 100% !important; touch-action: pan-y; }
-            #theory-canvas-container > .absolute.bottom-6 {
-                position: relative !important; inset: auto !important; left: auto !important;
-                bottom: auto !important; transform: none !important; margin: 10px 10px 16px !important;
-                display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-                width: auto !important; gap: 8px !important;
+            #module-theory.pointer-events-none,
+            #module-practical.pointer-events-none,
+            #module-logbook.pointer-events-none { display: none !important; }
+
+            /* --- Теория / 3D --- */
+            #theory-canvas-container {
+                height: 64dvh !important; min-height: 360px; max-height: 760px;
             }
-            #theory-canvas-container > .absolute.bottom-6 button {
-                min-height: 46px; justify-content: flex-start; white-space: normal;
+            #theory-canvas-container canvas,
+            #brinell-canvas-container canvas {
+                display: block; width: 100% !important; height: 100% !important; touch-action: pan-y;
             }
             #theory-canvas-container > .absolute.top-6.left-6 {
                 top: 10px !important; left: 10px !important; right: 10px !important;
+                max-width: none !important; padding: 10px 12px !important;
+            }
+            #theory-canvas-container > .absolute.top-6.left-6 h3 { font-size: 12px !important; }
+            #theory-canvas-container > .absolute.top-6.left-6 p { font-size: 12px !important; }
+            #theory-canvas-container > .absolute.bottom-6 {
+                left: 10px !important; right: 10px !important; bottom: 10px !important;
+                transform: none !important;
+                display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 6px !important; padding: 6px !important;
+            }
+            .station-tab-btn {
+                justify-content: center; min-height: 46px;
+                padding: 8px 6px !important; font-size: 12px !important; white-space: nowrap;
+            }
+
+            /* --- Практика (Бринелль) --- */
+            #module-practical { flex-direction: column !important; }
+            #module-practical > div:first-child { width: 100%; height: auto !important; flex: none; }
+            #module-practical > div:first-child > .h-14 {
+                height: auto !important; padding: 10px 12px !important; flex-wrap: wrap; gap: 8px;
+            }
+            #module-practical > div:first-child > .h-14 > div:last-child {
+                width: 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;
+            }
+            #module-practical > div:first-child > .h-14 > div:last-child > svg,
+            #module-practical > div:first-child > .h-14 > div:last-child > i { display: none; }
+            .wiz-step { justify-content: center; padding: 6px 4px !important; font-size: 11px !important; white-space: nowrap; }
+            #brinell-canvas-container { height: 56dvh !important; min-height: 340px; flex: none !important; }
+            #practical-overlay-info {
+                top: 8px !important; left: 8px !important; right: 8px !important;
                 max-width: none !important; padding: 10px !important;
             }
-            #theory-canvas-container > .absolute.top-6.left-6 h3 { font-size: 11px !important; }
-            #theory-canvas-container > .absolute.top-6.left-6 p { font-size: 10px !important; }
-            #theory-canvas-container > .absolute.bottom-6 {
-                bottom: 10px !important; left: 8px !important; right: 8px !important;
-                transform: none !important; flex-wrap: wrap; justify-content: center; gap: 5px !important;
-                padding: 6px !important;
+            #practical-overlay-info p { font-size: 12px !important; }
+            #testing-status-overlay .glass-panel { padding: 22px 18px !important; margin: 0 16px; }
+            #testing-status-overlay .w-64 { width: 100% !important; }
+            #module-practical > aside {
+                width: 100% !important; border-left: 0 !important;
+                border-top: 1px solid var(--border); overflow: visible !important;
             }
-            .station-tab-btn { padding: 8px 9px !important; font-size: 10px !important; }
-            #module-practical { flex-direction: column !important; min-height: 0; }
-            #module-practical > div:first-child { width: 100% !important; min-width: 0; min-height: 520px; }
-            #module-practical > div:first-child > .h-14 { height: auto !important; min-height: 56px; padding: 8px 10px !important; flex-wrap: wrap; gap: 8px; }
-            #module-practical .wiz-step { padding: 5px 7px !important; font-size: 9px !important; }
-            #brinell-canvas-container { height: 54dvh !important; min-height: 360px; flex: none !important; }
-            #practical-overlay-info { top: 8px !important; left: 8px !important; right: 8px; max-width: none !important; padding: 9px !important; }
-            #module-practical > aside { width: 100% !important; max-height: none; overflow: visible !important; border-left: 0 !important; border-top: 1px solid var(--border); }
-            #module-practical > aside > div { padding: 14px !important; }
-            #module-logbook { padding: 14px !important; }
-            #module-logbook .max-w-6xl > div:first-child { align-items: stretch !important; flex-direction: column; gap: 12px; }
-            #module-logbook .max-w-6xl > div:first-child > div:last-child { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-            #module-logbook .max-w-6xl > div:first-child > div:last-child button { justify-content: center; padding: 9px 7px !important; }
-            #module-logbook h2 { font-size: 14px !important; line-height: 1.4; }
-            #station-modal, #formula-modal, #microscope-modal { padding: 8px !important; align-items: flex-end !important; }
+            #module-practical > aside > div { padding: 16px !important; }
+            #material-list-grid { max-height: none !important; overflow: visible !important; }
+
+            /* --- Журнал --- */
+            #module-logbook { padding: 16px !important; overflow: visible !important; min-height: 60dvh; }
+            #module-logbook .max-w-6xl > div:first-child { flex-direction: column; align-items: stretch !important; gap: 12px; }
+            #module-logbook .max-w-6xl > div:first-child > div:last-child {
+                display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;
+            }
+            #module-logbook .max-w-6xl > div:first-child > div:last-child > * + * { margin-left: 0 !important; }
+            #module-logbook .max-w-6xl > div:first-child > div:last-child button { justify-content: center; padding: 10px 8px !important; }
+            #module-logbook h2 { font-size: 16px !important; line-height: 1.35; }
+            #module-logbook table { min-width: 860px; }   /* таблица скроллится внутри своей обёртки, а не ломает страницу */
+            #module-logbook th, #module-logbook td { padding: 10px 12px !important; }
+            .overflow-x-auto { -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+
+            /* --- Модальные окна: «шторка» снизу --- */
+            #station-modal, #formula-modal, #microscope-modal { padding: 0 !important; align-items: flex-end !important; }
             #station-modal > div, #formula-modal > div, #microscope-modal > div {
-                width: 100% !important; max-width: none !important; max-height: 94dvh !important;
-                border-radius: 16px 16px 10px 10px !important;
+                width: 100% !important; max-width: none !important;
+                max-height: 94dvh !important; border-radius: 20px 20px 0 0 !important;
             }
-            #station-modal > div > div:first-child, #formula-modal > div > div:first-child { padding: 12px !important; }
-            #modal-station-title { font-size: 12px !important; }
-            #modal-slide-container { padding: 14px !important; font-size: 13px; }
-            #station-modal > div > div:last-child { padding: 10px !important; gap: 8px; flex-wrap: wrap; }
-            #station-modal > div > div:last-child > div:last-child { gap: 6px !important; }
-            #station-modal button, #formula-modal button { min-height: 40px; }
-            #formula-modal .p-6 { padding: 12px !important; }
-            #formula-modal .grid-cols-3 { grid-template-columns: 1fr !important; }
-            #microscope-modal > div { padding: 14px !important; }
-            #microscope-canvas { width: min(100%, 420px) !important; height: auto !important; touch-action: pan-y; }
-            input, select, textarea { max-width: 100%; font-size: 16px !important; }
-            button { touch-action: manipulation; }
-            img, canvas, svg { max-width: 100%; }
-            .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+            #station-modal > div > div:first-child, #formula-modal > div > div:first-child { padding: 12px 14px !important; }
+            #modal-station-title { font-size: 13px !important; }
+            #modal-slide-container { padding: 16px !important; }
+            #modal-slide-container .text-xs { font-size: 14px !important; line-height: 1.6 !important; }
+            #modal-slide-container .text-\[10px\] { font-size: 11px !important; }
+            #modal-quiz-options button { min-height: 48px; }
+            #station-modal > div > div:last-child {
+                padding: 10px 14px calc(10px + env(safe-area-inset-bottom)) !important;
+                gap: 8px; flex-wrap: wrap;
+            }
+            #station-modal > div > div:last-child > div:last-child { flex: 1 1 auto; justify-content: flex-end; gap: 8px !important; }
+            #btn-prev-slide, #btn-next-slide { min-height: 44px; padding-left: 16px !important; padding-right: 16px !important; }
+
+            #formula-modal > div > .p-6 { padding: 14px 14px calc(14px + env(safe-area-inset-bottom)) !important; max-height: calc(94dvh - 60px) !important; }
+            #formula-modal .text-sm.font-bold.text-slate-100 { font-size: 12px !important; overflow-wrap: anywhere; }
+
+            #microscope-modal > div {
+                overflow-y: auto; padding: 18px 14px calc(16px + env(safe-area-inset-bottom)) !important;
+            }
+            #microscope-modal h3 { font-size: 13px !important; padding-right: 40px; text-align: center; }
+            #microscope-modal > div > button:first-child { top: 8px !important; right: 8px !important; }
+            #microscope-viewport { width: min(100%, 420px, 52dvh) !important; }
+            #microscope-canvas { touch-action: none; }   /* перетаскивание визиров не прокручивает страницу */
+            #microscope-footer { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px !important; }
+            #microscope-footer > div:first-child { justify-content: center; }
+            #microscope-footer > div:last-child { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+            #microscope-footer button { min-height: 44px; }
+
+            /* --- Удобство касаний --- */
+            button, select, input[type="number"] { touch-action: manipulation; }
+            #module-practical button, #formula-modal button, #module-logbook button { min-height: 44px; }
+            .mat-cat-btn { min-height: 44px; }
+            /* 16px в полях ввода — иначе iOS Safari зумит страницу при фокусе */
+            input, select, textarea { max-width: 100%; font-size: 16px !important; min-height: 44px; }
         }
-        @media (max-width: 380px) {
-            #app-body > header h1 { font-size: 11px !important; }
-            .station-tab-btn { font-size: 9px !important; padding: 7px !important; }
-            #module-logbook .max-w-6xl > div:first-child > div:last-child { grid-template-columns: 1fr; }
+
+        /* ================= < 640px: телефон ================= */
+        @media (max-width: 639px) {
+            #app-body > header > div:first-child > div:first-child { padding: 6px !important; }
+            #app-body > header h1 > span.text-xs { font-size: 9px !important; }
+            #header-controls { gap: 6px; }
+            #theory-canvas-container { height: 62dvh !important; min-height: 380px; }
+            #theory-canvas-container > .absolute.bottom-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .wiz-step { font-size: 10px !important; gap: 4px !important; }
+            #module-logbook .max-w-6xl > div:first-child > div:last-child { grid-template-columns: 1fr 1fr; }
+            #module-logbook .max-w-6xl > div:first-child > div:last-child > :last-child { grid-column: 1 / -1; }
+            #formula-modal .grid-cols-3 { grid-template-columns: 1fr 1fr !important; }
+            #formula-modal .grid-cols-3 > :last-child { grid-column: 1 / -1; }
+        }
+
+        /* ================= < 380px: узкие телефоны ================= */
+        @media (max-width: 379px) {
+            #app-body > header h1 { font-size: 13px !important; }
+            #app-body > header p { display: none; }
+            #theme-label { display: none; }
+            .station-tab-btn { font-size: 11px !important; }
+            .wiz-step { font-size: 0 !important; }            /* оставляем только номер шага */
+            .wiz-step > span { font-size: 10px !important; }
+            #formula-modal .grid-cols-3, #formula-modal .grid-cols-2 { grid-template-columns: 1fr !important; }
+        }
+
+        /* Телефон в альбомной ориентации: невысокий экран */
+        @media (max-width: 1023px) and (max-height: 500px) and (orientation: landscape) {
+            #app-body > header { position: relative; }
+            #theory-canvas-container, #brinell-canvas-container { height: 88dvh !important; min-height: 280px; }
+            #microscope-viewport { width: min(100%, 80dvh) !important; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #main-nav, #menu-toggle span, #nav-backdrop { transition: none !important; }
+            body.menu-open #main-nav button { animation: none !important; }
         }
 
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col bg-darkBg text-slate-200 antialiased select-none overflow-hidden bg-grid-pattern" id="app-body">
+<body class="h-screen w-full flex flex-col bg-darkBg text-slate-200 antialiased select-none overflow-hidden bg-grid-pattern" id="app-body">
 
     <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
     <header class="h-16 border-b border-industrialBorder bg-panelBg/95 backdrop-blur-md px-6 flex items-center justify-between z-30 shrink-0 shadow-soft">
@@ -537,7 +679,7 @@
             </div>
         </div>
 
-        <nav class="flex items-center space-x-2 bg-slate-950 p-1.5 rounded-2xl border border-industrialBorder shadow-soft">
+        <nav id="main-nav" aria-label="Разделы лаборатории" class="flex items-center space-x-2 bg-slate-950 p-1.5 rounded-2xl border border-industrialBorder shadow-soft">
             <button id="nav-theory" onclick="switchModule('theory')" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 bg-cyan-950/80 text-neonCyan border border-cyan-700/50 glow-cyan">
                 <i data-lucide="compass" class="w-4 h-4"></i>
                 1. Теория и Квест
@@ -553,7 +695,7 @@
             </button>
         </nav>
 
-        <div class="flex items-center space-x-3">
+        <div id="header-controls" class="flex items-center space-x-3">
             <!-- Theme toggle -->
             <button id="theme-toggle-btn" onclick="toggleTheme()" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-industrialBorder bg-slate-900 hover:bg-slate-800 transition text-xs font-mono" title="Сменить тему">
                 <i data-lucide="sun" class="w-4 h-4 text-amber-400" id="theme-icon-sun"></i>
@@ -583,19 +725,18 @@
                 <i data-lucide="calculator" class="w-5 h-5"></i>
             </button>
         </div>
+
+        <!-- Гамбургер (виден на экранах < 1280px) -->
+        <button id="menu-toggle" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Открыть меню">
+            <span></span><span></span><span></span>
+        </button>
     </header>
+    <div id="nav-backdrop" aria-hidden="true"></div>
 
     <main class="flex-1 relative overflow-hidden flex">
 
         <!-- МОДУЛЬ 1: ТЕОРИЯ -->
         <section id="module-theory" class="absolute inset-0 flex flex-col z-10">
-            <!-- Отдельные крупные кнопки теории для сенсорных экранов -->
-            <div id="mobile-theory-nav" class="hidden">
-                <button type="button" onclick="openStationTheory('brinell')">1. Бринелль</button>
-                <button type="button" onclick="openStationTheory('rockwell')">2. Роквелл</button>
-                <button type="button" onclick="openStationTheory('vickers')">3. Виккерс</button>
-                <button type="button" onclick="openStationTheory('shore')">4. Шор</button>
-            </div>
             <div id="theory-canvas-container" class="w-full h-full relative cursor-grab active:cursor-grabbing">
                 <div class="absolute top-6 left-6 z-20 glass-panel p-4 rounded-xl max-w-sm pointer-events-none border-l-4 border-l-neonCyan">
                     <h3 class="font-tech text-sm font-bold text-slate-100 flex items-center gap-2">
@@ -850,12 +991,12 @@
                 <i data-lucide="microscope" class="w-5 h-5 text-neonCyan"></i> ИЗМЕРИТЕЛЬНЫЙ МИКРОСКОП — НОНИУСНАЯ ШКАЛА
             </h3>
             <p class="text-xs text-slate-400 font-mono mb-4 text-center">Перетащите левую и правую визирные линии шкалы к внешним краям сферического отпечатка лунки.</p>
-            <div class="relative w-[420px] h-[420px] rounded-full border-4 border-slate-700 bg-slate-950 overflow-hidden shadow-inner flex items-center justify-center">
-                <canvas id="microscope-canvas" width="420" height="420" class="cursor-col-resize"></canvas>
+            <div id="microscope-viewport" class="relative w-full max-w-[420px] aspect-square rounded-full border-4 border-slate-700 bg-slate-950 overflow-hidden shadow-inner flex items-center justify-center">
+                <canvas id="microscope-canvas" width="420" height="420" class="cursor-col-resize block w-full h-full"></canvas>
                 <div class="absolute inset-0 rounded-full border-[12px] border-slate-900/80 pointer-events-none shadow-2xl"></div>
                 <div class="absolute inset-0 scanlines pointer-events-none opacity-40"></div>
             </div>
-            <div class="mt-4 w-full flex items-center justify-between bg-slate-950 px-6 py-3 rounded-xl border border-slate-800">
+            <div id="microscope-footer" class="mt-4 w-full flex items-center justify-between bg-slate-950 px-6 py-3 rounded-xl border border-slate-800">
                 <div class="flex items-center gap-3">
                     <span class="text-xs font-mono text-slate-400">ДИАМЕТР (d):</span>
                     <span id="microscope-readout-d" class="font-mono text-lg font-bold text-neonGreen">0.000 мм</span>
@@ -2338,13 +2479,16 @@ function initPractical3D() {
     craterMesh.visible = false;
     practicalScene.add(craterMesh);
 
-    window.addEventListener('resize', () => {
+    const resizePractical = () => {
         if (!practicalCamera || !practicalRenderer) return;
         const c = document.getElementById('brinell-canvas-container');
+        if (!c || !c.clientWidth || !c.clientHeight) return; // модуль скрыт (display:none на мобильных)
         practicalCamera.aspect = c.clientWidth / c.clientHeight;
         practicalCamera.updateProjectionMatrix();
         practicalRenderer.setSize(c.clientWidth, c.clientHeight);
-    });
+    };
+    window.addEventListener('resize', resizePractical);
+    window.addEventListener('orientationchange', () => setTimeout(resizePractical, 250));
 
     animatePractical();
 }
@@ -2554,6 +2698,11 @@ function switchModule(modName) {
         document.getElementById('nav-logbook').className = "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 bg-cyan-950/80 text-neonCyan border border-cyan-700/50 glow-cyan";
         renderLogbookTable();
     }
+
+    if (typeof window.closeMobileMenu === 'function') window.closeMobileMenu();
+    // Скрытый модуль имел нулевой размер — пересчитываем WebGL-холсты после показа
+    requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+    if (window.matchMedia('(max-width: 1023px)').matches) window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function isTheoryComplete() {
@@ -2957,20 +3106,32 @@ function initMicroscopeCanvas() {
         document.getElementById('disp-measured-d').innerText = `${measuredD.toFixed(3)} мм`;
         requestAnimationFrame(draw);
     }
-    canvas.addEventListener('mousedown', (e) => {
+    // Pointer Events: одинаково работают для мыши, пальца и стилуса.
+    // Координаты пересчитываются в пиксели canvas, т.к. на телефоне он отображается уменьшенным.
+    const toCanvasX = (e) => {
         const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        if (Math.abs(mouseX - caliperLeft) < 15) isDraggingCaliper = 'left';
-        else if (Math.abs(mouseX - caliperRight) < 15) isDraggingCaliper = 'right';
+        return (e.clientX - rect.left) * (canvas.width / rect.width);
+    };
+    canvas.addEventListener('pointerdown', (e) => {
+        const x = toCanvasX(e);
+        const tolerance = e.pointerType === 'mouse' ? 15 : 34; // палец толще курсора
+        const dl = Math.abs(x - caliperLeft), dr = Math.abs(x - caliperRight);
+        if (Math.min(dl, dr) < tolerance) {
+            isDraggingCaliper = dl <= dr ? 'left' : 'right';
+            try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+            e.preventDefault();
+        }
     });
-    canvas.addEventListener('mousemove', (e) => {
+    canvas.addEventListener('pointermove', (e) => {
         if (!isDraggingCaliper) return;
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        if (isDraggingCaliper === 'left') caliperLeft = Math.min(mouseX, caliperRight - 10);
-        else if (isDraggingCaliper === 'right') caliperRight = Math.max(mouseX, caliperLeft + 10);
+        const x = Math.max(0, Math.min(canvas.width, toCanvasX(e)));
+        if (isDraggingCaliper === 'left') caliperLeft = Math.min(x, caliperRight - 10);
+        else caliperRight = Math.max(x, caliperLeft + 10);
     });
-    window.addEventListener('mouseup', () => isDraggingCaliper = null);
+    const stopDrag = () => { isDraggingCaliper = null; };
+    canvas.addEventListener('pointerup', stopDrag);
+    canvas.addEventListener('pointercancel', stopDrag);
+    window.addEventListener('pointerup', stopDrag);
     draw();
 }
 
@@ -3126,6 +3287,28 @@ function runVickersCalculator() {
     res.innerText = 'HV = ' + hv.toFixed(1);
     sounds.playSuccess();
 }
+
+/* ========== HAMBURGER MENU ========== */
+(function initMobileMenu() {
+    const btn = document.getElementById('menu-toggle');
+    const backdrop = document.getElementById('nav-backdrop');
+    if (!btn) return;
+    const setOpen = (open) => {
+        document.body.classList.toggle('menu-open', open);
+        btn.setAttribute('aria-expanded', String(open));
+        btn.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
+    };
+    window.closeMobileMenu = () => setOpen(false);
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setOpen(!document.body.classList.contains('menu-open'));
+    });
+    if (backdrop) backdrop.addEventListener('click', () => setOpen(false));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+    const mq = window.matchMedia('(min-width: 1280px)');
+    const onMq = (e) => { if (e.matches) setOpen(false); };
+    if (mq.addEventListener) mq.addEventListener('change', onMq); else mq.addListener(onMq);
+})();
 
 /* ========== INIT ========== */
 window.addEventListener('DOMContentLoaded', () => {
